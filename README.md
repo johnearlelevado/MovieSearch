@@ -10,7 +10,6 @@
   - Retrofit2
   - Dagger Hilt
   - View Binding
-  - MVVM Pattern
   - ViewModel
   - LiveData
   - Kotlin Flow

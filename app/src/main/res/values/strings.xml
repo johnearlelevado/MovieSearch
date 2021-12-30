@@ -2,5 +2,6 @@
     <string name="app_name">Movie Search</string>
     <string name="offline">Offline</string>
     <string name="search_hint">Search</string>
+    <string name="no_results">No Results</string>
     <string name="last_visit">Last visit: %s</string>
 </resources>

@@ -1,5 +1,6 @@
 package com.example.challenge.viewmodels
 
+import android.util.Log
 import androidx.hilt.lifecycle.ViewModelInject
 import com.example.challenge.repository.Repository
 

@@ -3,8 +3,11 @@ package com.example.challenge.ui
 import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.viewModels
 import androidx.appcompat.widget.SearchView
+import androidx.core.view.isEmpty
+import androidx.core.view.isVisible
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
@@ -18,10 +21,7 @@ import com.example.challenge.ui.adapters.SearchResultRVAdapter
 import com.example.challenge.util.NetworkStatusUtil
 import com.example.challenge.viewmodels.MoviesViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.*
 
 
 @AndroidEntryPoint
@@ -32,8 +32,6 @@ class MainActivity : BaseActivity() {
     private val moviesViewModel: MoviesViewModel by viewModels()
     private lateinit var searchResultRVAdapter: SearchResultRVAdapter
     private lateinit var networkStatusUtil: NetworkStatusUtil
-
-    private val fetchMatchesNextPage = MutableSharedFlow<Int>(extraBufferCapacity = 32)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,9 +60,8 @@ class MainActivity : BaseActivity() {
     private fun initializeSearchView() {
         binding.input.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
-                previousList = arrayListOf()
-                searchResultRVAdapter.clearResults()
-                moviesViewModel.getMovieList("$query",1)
+                fetchInitialData()
+                hideKeyboard(this@MainActivity, window.decorView)
                 return true
             }
 
@@ -72,7 +69,8 @@ class MainActivity : BaseActivity() {
                 if (newText.isNullOrEmpty()) {
                     previousList = arrayListOf()
                     searchResultRVAdapter.clearResults()
-                    moviesViewModel.getMovieList("",1)
+                    binding.flNoResults.isVisible = false
+                    binding.list.isVisible = true
                 }
                 return false
             }
@@ -101,27 +99,27 @@ class MainActivity : BaseActivity() {
         binding.list.adapter = searchResultRVAdapter
         binding.swipeRefresh.setOnRefreshListener {
             if (!binding.input.query.isNullOrEmpty()) {
-                previousList = arrayListOf()
-                searchResultRVAdapter.clearResults()
-                moviesViewModel.getMovieList("${binding.input.query}",1)
+                fetchInitialData()
             } else {
                 binding.swipeRefresh.isRefreshing = false
             }
         }
 
-        // Manage execution of fetch items next page by applying debounce to avoid duplicate
-        fetchMatchesNextPage
-            .debounce(1000)
-            .onEach { page ->
-                moviesViewModel.getMovieList("${binding.input.query}",page)
-            }
-            .launchIn(lifecycleScope)
 
         binding.list.addOnScrollListener(object : EndlessRecyclerViewScrollListener(layoutManager) {
             override fun onLoadMore(page: Int, totalItemsCount: Int, view: RecyclerView?) {
-                fetchMatchesNextPage.tryEmit(page)
+                moviesViewModel.getMovieList("${binding.input.query}",page)
             }
         })
+    }
+
+    /**
+     * Clear list and fetching first page
+     * */
+    private fun fetchInitialData() {
+        previousList = arrayListOf()
+        searchResultRVAdapter.clearResults()
+        moviesViewModel.getMovieList("${binding.input.query}", 1)
     }
 
     /**
@@ -131,7 +129,7 @@ class MainActivity : BaseActivity() {
      * */
     private fun initNetworkConnectionStatusHandler() {
         networkStatusUtil = NetworkStatusUtil(this) {
-            moviesViewModel.getMovieList("${binding.input.query}",1)
+            fetchInitialData()
         }.apply {
             build(binding.tvNetworkStatusBar)
         }
@@ -149,6 +147,15 @@ class MainActivity : BaseActivity() {
                     binding.swipeRefresh.isRefreshing = false
                     var downloadedList = it.mResponse?.search ?: listOf()
                     processResults(downloadedList)
+                    if (previousList.isEmpty()) {
+                        if (binding.input.query.isNotEmpty()) {
+                            binding.flNoResults.isVisible = true
+                            binding.list.isVisible = false
+                        }
+                    } else {
+                        binding.flNoResults.isVisible = false
+                        binding.list.isVisible = true
+                    }
                     searchResultRVAdapter.replace(previousList)
                 }
                 Status.ERROR, Status.FAIL -> {
@@ -163,6 +170,7 @@ class MainActivity : BaseActivity() {
             if (!previousList.contains(x)) previousList.add(x)
         }
     }
+
 
     companion object {
         const val SPAN_COUNT_PORT = 3

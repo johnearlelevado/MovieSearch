@@ -22,7 +22,7 @@
             android:layout_marginStart="15dp"
             android:layout_marginBottom="15dp"
             android:layout_marginTop="15dp"
-            android:hint="@string/search_hint"
+            app:queryHint="@string/search_hint"
             app:iconifiedByDefault="false"
             android:imeOptions="actionSearch"
             android:inputType="textNoSuggestions"
@@ -48,10 +48,25 @@
 
         <!--<include layout="@layout/skeleton_shimmer_layout"/>-->
 
+        <FrameLayout
+            android:id="@+id/fl_no_results"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone"
+            >
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/no_results"
+                android:layout_gravity="center"
+                />
+        </FrameLayout>
+
         <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
             android:id="@+id/swipe_refresh"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
+
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/list"
                 android:layout_width="match_parent"
@@ -61,6 +76,7 @@
                 tools:listitem="@layout/view_search_result_item"
                 />
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
     </FrameLayout>
 
 

@@ -12,7 +12,6 @@
   - View Binding
   - ViewModel
   - LiveData
-  - Kotlin Flow
 
 ### Unit Test
   - ViewModel Unit Test

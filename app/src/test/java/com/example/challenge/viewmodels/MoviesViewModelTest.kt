@@ -62,7 +62,7 @@ class MoviesViewModelTest {
                 title = "fake-title",
                 type = "fake-type",
                 poster = "fake-poster",
-                year = 2021,
+                year = "fake-year",
                 imdbID = "fake-id"
             )
         )
@@ -116,7 +116,7 @@ class MoviesViewModelTest {
         val response: Response<MovieSearchResult> = Response.success(MovieSearchResult(search = listOf(),totalResults = 0,response = false))
         val movieResponse: Response<Movie> = Response.success(Movie(
             imdbID = "fake-id",
-            year = 2021,
+            year = "fake-year",
             title = "fake-title",
             rated = "fake-rating",
             response = false,
@@ -133,13 +133,13 @@ class MoviesViewModelTest {
             awards = "fake-awards",
             poster = "fake-poster",
             metascore = "fake-metascore",
-            imdbRating = 0.0,
+            imdbRating = "0.0",
             type = "fake-type",
             dVD = "fake-dvd",
             boxOffice = "fake-boxoffice",
             production = "fake-production"
         ))
-        val crimeDataServiceMock = mock<OmdbApiService> {
+        val serviceMock = mock<OmdbApiService> {
             on { getMovieItem(omdbId = any(), apikey = any()) } doReturn Observable.just(movieResponse)
 
             on { getMovieList(searchTerm = any() ,page = any(),apikey = any()) } doReturn Observable.just(
@@ -147,7 +147,7 @@ class MoviesViewModelTest {
             )
 
         }
-        val repository = RepositoryImpl(crimeDataServiceMock, schedulerProviderMock)
+        val repository = RepositoryImpl(serviceMock, schedulerProviderMock)
         viewModel = MoviesViewModel(repository)
     }
 
@@ -160,11 +160,11 @@ class MoviesViewModelTest {
             ResponseBody.create(
                 MediaType.parse("application/json"),
                 "{}"))
-        val crimeDataServiceMock = mock<OmdbApiService> {
+        val serviceMock = mock<OmdbApiService> {
             on { getMovieItem(omdbId = any(), apikey = any()) } doReturn Observable.just(movieResponse)
             on { getMovieList(searchTerm = any() ,page = any(),apikey = any()) } doReturn Observable.just(movieListResponse)
         }
-        val repository = RepositoryImpl(crimeDataServiceMock, schedulerProviderMock)
+        val repository = RepositoryImpl(serviceMock, schedulerProviderMock)
         viewModel = MoviesViewModel(repository)
     }
 }

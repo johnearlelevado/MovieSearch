@@ -77,6 +77,8 @@ class MainActivity : BaseActivity() {
         })
     }
 
+    private lateinit var endlessRecyclerViewScrollListener: EndlessRecyclerViewScrollListener
+
     /**
      * Set RecyclerView LayoutManager and Adapter
      * Set callback when item is clicked
@@ -105,18 +107,20 @@ class MainActivity : BaseActivity() {
             }
         }
 
-
-        binding.list.addOnScrollListener(object : EndlessRecyclerViewScrollListener(layoutManager) {
+        endlessRecyclerViewScrollListener = object : EndlessRecyclerViewScrollListener(layoutManager) {
             override fun onLoadMore(page: Int, totalItemsCount: Int, view: RecyclerView?) {
-                moviesViewModel.getMovieList("${binding.input.query}",page)
+                moviesViewModel.getMovieList("${binding.input.query}",page + 1)
             }
-        })
+        }
+
+        binding.list.addOnScrollListener(endlessRecyclerViewScrollListener)
     }
 
     /**
      * Clear list and fetching first page
      * */
     private fun fetchInitialData() {
+        endlessRecyclerViewScrollListener.resetState()
         previousList = arrayListOf()
         searchResultRVAdapter.clearResults()
         moviesViewModel.getMovieList("${binding.input.query}", 1)
@@ -136,7 +140,7 @@ class MainActivity : BaseActivity() {
     }
 
     var previousList = arrayListOf<Search>()
-
+    var totalDownloadedResults = 0
     /**
      * handle response from livedata
      * */
@@ -146,6 +150,7 @@ class MainActivity : BaseActivity() {
                 Status.SUCCESS -> {
                     binding.swipeRefresh.isRefreshing = false
                     var downloadedList = it.mResponse?.search ?: listOf()
+                    totalDownloadedResults = it.mResponse?.totalResults ?: 0
                     processResults(downloadedList)
                     if (previousList.isEmpty()) {
                         if (binding.input.query.isNotEmpty()) {

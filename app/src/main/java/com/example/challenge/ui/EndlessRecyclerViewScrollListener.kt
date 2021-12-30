@@ -1,5 +1,6 @@
 package com.example.challenge.ui
 
+import android.util.Log
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -8,7 +9,7 @@ import androidx.recyclerview.widget.StaggeredGridLayoutManager
 abstract class EndlessRecyclerViewScrollListener : RecyclerView.OnScrollListener {
     // The minimum amount of items to have below your current scroll position
     // before loading more.
-    private var visibleThreshold = 10
+    private var visibleThreshold = 5
 
     // The current offset index of data you have loaded
     private var currentPage = 1
@@ -80,6 +81,7 @@ abstract class EndlessRecyclerViewScrollListener : RecyclerView.OnScrollListener
         // If it’s still loading, we check to see if the dataset count has
         // changed, if so we conclude it has finished loading and update the current page
         // number and total item count.
+        Log.d("EndlessScrollListener","loading => $loading previousTotalItemCount => $previousTotalItemCount totalItemCount => $totalItemCount")
         if (loading && totalItemCount > previousTotalItemCount) {
             loading = false
             previousTotalItemCount = totalItemCount
@@ -89,12 +91,14 @@ abstract class EndlessRecyclerViewScrollListener : RecyclerView.OnScrollListener
         // the visibleThreshold and need to reload more data.
         // If we do need to reload some more data, we execute onLoadMore to fetch the data.
         // threshold should reflect how many total columns there are too
+        //Log.d("EndlessScrollListener","loading => $loading lastVisibleItemPosition => $lastVisibleItemPosition visibleThreshold => $visibleThreshold totalItemCount => $totalItemCount")
         if (!loading && lastVisibleItemPosition + visibleThreshold > totalItemCount) {
             currentPage++
             onLoadMore(currentPage, totalItemCount, view)
             loading = true
         }
     }
+
 
     // Call this method whenever performing new searches
     fun resetState() {

@@ -7,6 +7,7 @@
   - It made more sense to just use two the Activities `MainActivity` and `DetailActivity` instead of Jetpack Navigation component for simplicity since the app doesn't have too many UIs to navigate.
 
 ### Tech stack
+  - Coroutines
   - Retrofit2
   - Dagger Hilt
   - View Binding

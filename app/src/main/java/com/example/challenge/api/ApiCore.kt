@@ -1,7 +1,6 @@
 package com.example.challenge.api
 
 import com.facebook.stetho.okhttp3.StethoInterceptor
-import com.jakewharton.retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 
 import java.util.concurrent.TimeUnit
 
@@ -27,7 +26,6 @@ object ApiCore {
         return Retrofit.Builder()
             .baseUrl(baseUrl)
             .client(client)
-            .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }

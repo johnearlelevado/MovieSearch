@@ -1,15 +1,11 @@
 package com.example.challenge.api.omdb.dto
 
 import android.os.Parcelable
-import androidx.room.Entity
-import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import kotlinx.android.parcel.Parcelize
 
 @Parcelize
-@Entity(tableName = "movie")
 data class Movie (
-	@PrimaryKey
 	@SerializedName("imdbID") val imdbID : String,
 	@SerializedName("Title") val title : String,
 	@SerializedName("Year") val year : String,

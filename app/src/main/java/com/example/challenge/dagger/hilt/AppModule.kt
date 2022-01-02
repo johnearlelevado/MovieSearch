@@ -37,6 +37,6 @@ class AppModule {
 
     @Singleton
     @Provides
-    fun provideRepository(omdbApiService: OmdbApiService,schedulerProvider: SchedulerProvider):Repository
-            = RepositoryImpl(omdbApiService,schedulerProvider)
+    fun provideRepository(omdbApiService: OmdbApiService):Repository
+            = RepositoryImpl(omdbApiService)
 }

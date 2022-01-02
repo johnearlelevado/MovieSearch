@@ -37,7 +37,7 @@ class DetailActivity : BaseActivity() {
             finish()
         }
 
-        moviesViewModel.movieDetailsObservable.observe(this, Observer {
+        moviesViewModel.movieDetailsResponseLiveData.observe(this, Observer {
             handleResponse(it)
         })
         moviesViewModel.getMovieDetails(omdbId = movie?.imdbID!!)

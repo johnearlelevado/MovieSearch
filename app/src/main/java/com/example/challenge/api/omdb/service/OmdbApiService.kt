@@ -10,15 +10,15 @@ import retrofit2.http.Query
 interface OmdbApiService {
 
     @GET("/")
-    fun getMovieList(
+    suspend fun getMovieList(
         @Query("s") searchTerm: String,
         @Query("page") page: Int,
         @Query("apikey") apikey: String
-    ): Observable<Response<MovieSearchResult>>
+    ): Response<MovieSearchResult>
 
     @GET("/")
-    fun getMovieItem(
+    suspend fun getMovieItem(
         @Query("i") omdbId: String,
         @Query("apikey") apikey: String
-    ): Observable<Response<Movie>>
+    ): Response<Movie>
 }

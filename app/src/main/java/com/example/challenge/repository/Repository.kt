@@ -1,21 +1,12 @@
 package com.example.challenge.repository
 
-import androidx.lifecycle.MutableLiveData
-import com.example.challenge.api.common.ApiResponse
 import com.example.challenge.api.omdb.dto.Movie
 import com.example.challenge.api.omdb.dto.MovieSearchResult
-import io.reactivex.Flowable
-import io.reactivex.disposables.CompositeDisposable
+import retrofit2.Response
 
 interface Repository {
 
-    fun getCompositeDisposableObject(): CompositeDisposable
+    suspend fun getMovieList(searchTerm:String, pageNum:Int): Response<MovieSearchResult>
 
-    fun getMovieList(searchTerm:String, pageNum:Int)
-
-    fun getMovieDetails(omdbId:String)
-
-    fun getMovieListObservable(): MutableLiveData<ApiResponse<MovieSearchResult>>
-
-    fun getMovieDetailsObservable(): MutableLiveData<ApiResponse<Movie>>
+    suspend fun getMovieDetails(omdbId:String): Response<Movie>
 }

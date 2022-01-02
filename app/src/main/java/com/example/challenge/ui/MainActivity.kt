@@ -49,7 +49,7 @@ class MainActivity : BaseActivity() {
      * */
     private fun initializeViewModel() {
         // handle network response
-        moviesViewModel.movieListObservable.observe(this, Observer {
+        moviesViewModel.movieListResponseLiveData.observe(this, Observer {
             handleResponse(it)
         })
     }

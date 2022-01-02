@@ -17,6 +17,11 @@ import com.nhaarman.mockitokotlin2.mock
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.TestCoroutineDispatcher
+import kotlinx.coroutines.test.setMain
 import okhttp3.MediaType
 import okhttp3.ResponseBody
 import org.junit.Before
@@ -35,13 +40,8 @@ class MoviesViewModelTest {
     @get:Rule
     var instantTaskExecutorRule = InstantTaskExecutorRule()
 
-
-    companion object {
-        @ClassRule
-        @JvmField
-        val schedulers =
-            RxImmediateSchedulerRule()
-    }
+    @ExperimentalCoroutinesApi
+    val testDispatcher = TestCoroutineDispatcher()
 
     @Mock
     lateinit var observerMovieList: Observer<ApiResponse<MovieSearchResult>>
@@ -49,13 +49,13 @@ class MoviesViewModelTest {
     @Mock
     lateinit var observerMovieDetails: Observer<ApiResponse<Movie>>
 
-    private lateinit var viewModel: MoviesViewModel
+    lateinit var viewModel: MoviesViewModel
 
     lateinit var list : ArrayList<Search>
-    lateinit var schedulerProviderMock : SchedulerProvider
 
     @Before
     fun setup() {
+        Dispatchers.setMain(testDispatcher)
         list = ArrayList()
         list.add(
             Search(
@@ -66,11 +66,6 @@ class MoviesViewModelTest {
                 imdbID = "fake-id"
             )
         )
-
-        schedulerProviderMock = mock<SchedulerProvider>(){
-            on { io() } doReturn Schedulers.io()
-            on { ui() } doReturn AndroidSchedulers.mainThread()
-        }
     }
 
     @Test
@@ -78,8 +73,8 @@ class MoviesViewModelTest {
         setupSuccessResponse()
 
         viewModel.getMovieDetails(omdbId = "fake-id")
-        viewModel.movieDetailsObservable.observeForever(observerMovieDetails)
-        val value = viewModel.movieDetailsObservable.value
+        viewModel.movieDetailsResponseLiveData.observeForever(observerMovieDetails)
+        val value = viewModel.movieDetailsResponseLiveData.value
         assertThat(value?.mStatus).isEqualTo(Status.SUCCESS)
     }
 
@@ -87,8 +82,8 @@ class MoviesViewModelTest {
     fun `fetch movie list successfully`() {
         setupSuccessResponse()
         viewModel.getMovieList(searchTerm = "fake-term",pageNum = 0)
-        viewModel.movieListObservable.observeForever(observerMovieList)
-        val value = viewModel.movieListObservable.value
+        viewModel.movieListResponseLiveData.observeForever(observerMovieList)
+        val value = viewModel.movieListResponseLiveData.value
         assertThat(value?.mStatus).isEqualTo(Status.SUCCESS)
     }
 
@@ -97,8 +92,8 @@ class MoviesViewModelTest {
         setupFailedResponse()
 
         viewModel.getMovieDetails(omdbId = "fake-id")
-        viewModel.movieDetailsObservable.observeForever(observerMovieDetails)
-        val value = viewModel.movieDetailsObservable.value
+        viewModel.movieDetailsResponseLiveData.observeForever(observerMovieDetails)
+        val value = viewModel.movieDetailsResponseLiveData.value
         assertThat(value?.mStatus).isEqualTo(Status.ERROR)
     }
 
@@ -107,8 +102,8 @@ class MoviesViewModelTest {
         setupFailedResponse()
 
         viewModel.getMovieList(searchTerm = "fake-term",pageNum = 0)
-        viewModel.movieListObservable.observeForever(observerMovieList)
-        val value = viewModel.movieListObservable.value
+        viewModel.movieListResponseLiveData.observeForever(observerMovieList)
+        val value = viewModel.movieListResponseLiveData.value
         assertThat(value?.mStatus).isEqualTo(Status.ERROR)
     }
 
@@ -140,14 +135,12 @@ class MoviesViewModelTest {
             production = "fake-production"
         ))
         val serviceMock = mock<OmdbApiService> {
-            on { getMovieItem(omdbId = any(), apikey = any()) } doReturn Observable.just(movieResponse)
+            on { runBlocking { getMovieItem(omdbId = any(), apikey = any()) } } doReturn movieResponse
 
-            on { getMovieList(searchTerm = any() ,page = any(),apikey = any()) } doReturn Observable.just(
-                response
-            )
+            on { runBlocking { getMovieList(searchTerm = any() ,page = any(),apikey = any()) } } doReturn response
 
         }
-        val repository = RepositoryImpl(serviceMock, schedulerProviderMock)
+        val repository = RepositoryImpl(serviceMock)
         viewModel = MoviesViewModel(repository)
     }
 
@@ -161,10 +154,10 @@ class MoviesViewModelTest {
                 MediaType.parse("application/json"),
                 "{}"))
         val serviceMock = mock<OmdbApiService> {
-            on { getMovieItem(omdbId = any(), apikey = any()) } doReturn Observable.just(movieResponse)
-            on { getMovieList(searchTerm = any() ,page = any(),apikey = any()) } doReturn Observable.just(movieListResponse)
+            on { runBlocking {getMovieItem(omdbId = any(), apikey = any())} } doReturn movieResponse
+            on { runBlocking {getMovieList(searchTerm = any() ,page = any(),apikey = any())} } doReturn movieListResponse
         }
-        val repository = RepositoryImpl(serviceMock, schedulerProviderMock)
+        val repository = RepositoryImpl(serviceMock)
         viewModel = MoviesViewModel(repository)
     }
 }
